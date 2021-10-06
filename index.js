@@ -109,6 +109,7 @@ io.on("connection", (socket) => {
       if (unReadChats[key].sendTo == dId) {
         console.log(key, unReadChats[key]);
         clients[dId].emit("check_unread", unReadChats[key]);
+        delete unReadChats[key];
       }
     });
   });
