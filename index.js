@@ -106,8 +106,7 @@ server.listen(port, "0.0.0.0", () => {
 
 app.route("/check_online").get((req, res) => {
   return res.json(
-    "Number Of Current Active Users: ",
-    Object.keys(clients).length
+    "Number Of Current Active Users: " + Object.keys(clients).length
   );
 });
 function send_to_db(msg) {
