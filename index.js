@@ -104,8 +104,8 @@ server.listen(port, "0.0.0.0", () => {
   console.log("server started");
 });
 
-app.route("/check").get((req, res) => {
-  return res.json("App Connected");
+app.route("/check_online").get((req, res) => {
+  return res.json(Object.keys(clients).length);
 });
 function send_to_db(msg) {
   var postData = qs.stringify(msg);
