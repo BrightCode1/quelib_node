@@ -1,11 +1,9 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 const express = require("express");
 const https = require("https");
-var http = require("http");
 const qs = require("querystring");
 const app = express();
 const port = process.env.PORT || 5000;
-var server = http.createServer(app);
+var server = https.createServer(app);
 const io = require("socket.io")(server);
 
 app.use(express.json());
@@ -113,9 +111,9 @@ function send_to_db(msg) {
   var postData = qs.stringify(msg);
 
   var options = {
-    hostname: "localhost",
+    hostname: "https://www.quelib.com",
     port: 443,
-    path: "/quelib/src/chats/post.php",
+    path: "/src/chats/post.php",
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -124,8 +122,6 @@ function send_to_db(msg) {
   };
   var buffer = "";
   var req = https.request(options, (res) => {
-    console.log("headers:", res.headers);
-
     res.on("data", function (chunk) {
       buffer += chunk;
     });
