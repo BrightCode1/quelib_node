@@ -1,9 +1,9 @@
 const express = require("express");
-const https = require("https");
+const http = require("http");
 const qs = require("querystring");
 const app = express();
 const port = process.env.PORT || 5000;
-var server = https.createServer(app);
+var server = http.createServer(app);
 const io = require("socket.io")(server);
 
 app.use(express.json());
@@ -35,6 +35,10 @@ io.on("connection", (socket) => {
       clients[id.myId].emit("online_status", "true");
       clients[id.userId].emit("read", id.myId);
     }
+  });
+
+  socket.on("inbox_event", (inb) => {
+    send_to_db(inb);
   });
 
   socket.on("on_chat", (cId) => {
@@ -121,7 +125,7 @@ function send_to_db(msg) {
     },
   };
   var buffer = "";
-  var req = https.request(options, (res) => {
+  var req = http.request(options, (res) => {
     res.on("data", function (chunk) {
       buffer += chunk;
     });
