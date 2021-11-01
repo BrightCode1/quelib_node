@@ -115,7 +115,7 @@ function send_to_db(msg) {
   var postData = qs.stringify(msg);
 
   var options = {
-    hostname: "https://www.quelib.com",
+    hostname: "http://www.quelib.com",
     port: 443,
     path: "/src/chats/post.php",
     method: "POST",
