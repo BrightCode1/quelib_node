@@ -111,6 +111,10 @@ app.route("/check_online").get((req, res) => {
     "Number Of Current Active Users: " + Object.keys(clients).length
   );
 });
+
+app.route("/db").get((req, res) => {
+  return res.json(send_to_db({ action: "SAVE_MSGS" }));
+});
 function send_to_db(msg) {
   var postData = qs.stringify(msg);
 
@@ -140,4 +144,5 @@ function send_to_db(msg) {
 
   req.write(postData);
   req.end();
+  return buffer;
 }
