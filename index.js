@@ -1,4 +1,5 @@
 const express = require("express");
+const https = require("https");
 const http = require("http");
 const qs = require("querystring");
 const app = express();
@@ -85,6 +86,7 @@ io.on("connection", (socket) => {
     } else {
       unReadChats[msg.sendTime] = msg;
     }
+
     send_to_db(msg);
   });
 
@@ -116,6 +118,7 @@ app.route("/db").get((req, res) => {
   return res.json(send_to_db({ action: "SAVE_MSGS" }));
 });
 function send_to_db(msg) {
+  console.log(msg);
   var postData = qs.stringify(msg);
 
   var options = {
@@ -123,13 +126,17 @@ function send_to_db(msg) {
     port: 443,
     path: "/src/chats/post.php",
     method: "POST",
+    rejectUnauthorized: true,
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "Content-Length": postData.length,
     },
+    checkServerIdentity: function (host, cert) {
+      return undefined;
+    },
   };
   var buffer = "";
-  var req = http.request(options, (res) => {
+  var req = https.request(options, (res) => {
     res.on("data", function (chunk) {
       buffer += chunk;
     });
