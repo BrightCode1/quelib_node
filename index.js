@@ -1,5 +1,4 @@
 const express = require("express");
-const https = require("https");
 const http = require("http");
 const qs = require("querystring");
 const app = express();
@@ -86,7 +85,6 @@ io.on("connection", (socket) => {
     } else {
       unReadChats[msg.sendTime] = msg;
     }
-
     send_to_db(msg);
   });
 
@@ -114,42 +112,6 @@ app.route("/check_online").get((req, res) => {
   );
 });
 
-app.route("/db").get((req, res) => {
-  return res.json(send_to_db({ action: "SAVE_MSGS" }));
-});
 function send_to_db(msg) {
   console.log(msg);
-  var postData = qs.stringify(msg);
-
-  var options = {
-    hostname: "quelib.com",
-    port: 443,
-    path: "/src/chats/post.php",
-    method: "POST",
-    rejectUnauthorized: true,
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "Content-Length": postData.length,
-    },
-    checkServerIdentity: function (host, cert) {
-      return undefined;
-    },
-  };
-  var buffer = "";
-  var req = https.request(options, (res) => {
-    res.on("data", function (chunk) {
-      buffer += chunk;
-    });
-    res.on("end", function () {
-      console.log(buffer);
-    });
-  });
-
-  req.on("error", (e) => {
-    console.error(e);
-  });
-
-  req.write(postData);
-  req.end();
-  return buffer;
 }
