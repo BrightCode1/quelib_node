@@ -1,28 +1,57 @@
 const express = require("express");
+const https = require("https");
 const http = require("http");
 const qs = require("querystring");
+const fs = require("fs");
 const app = express();
 const port = process.env.PORT || 5000;
 var server = http.createServer(app);
 const io = require("socket.io")(server);
 
 app.use(express.json());
-let clients = {};
-let chatRooms = {};
-let lastSeen = {};
-let unReadChats = {};
-let isReadChat = {};
+let clients = "./src/clients.json";
+let chatRooms = "./src/chatRooms.json";
+let lastSeen = "./src/lastSeen.json";
+let unReadChats = "./src/unReadChats.json";
+let isReadChat = "./src/isReadChat.json";
+const { readFile, writeFile } = require("fs/promises");
 
 io.on("connection", (socket) => {
+  // socket.on("user_log_in", (id) => {
+  //   if (!clients[id]) {
+  //     socket.id = id;
+  //     console.log(socket.id, "has connected");
+  //     delete lastSeen[id];
+  //     clients[id] = socket;
+  //   } else {
+  //     console.log(socket.id, "has disconn");
+  //   }
+  // });
+
   socket.on("user_log_in", (id) => {
-    if (!clients[id]) {
-      socket.id = id;
-      console.log(socket.id, "has connected");
-      delete lastSeen[id];
-      clients[id] = socket;
-    } else {
-      console.log(socket.id, "has disconn");
-    }
+    keyExists(clients, id);
+
+    // if (!clients[id]) {
+    var cnt = {};
+    socket.id = id;
+    console.log(socket.id, "has connected");
+    cnt[id] = socket;
+
+    console.log("it is data");
+    var items = Object.keys(cnt);
+    items.forEach((item) => {
+      var de = JSON.stringify(cnt[item], null, 2);
+      console.log(item + "=" + de);
+    });
+    // var done = append_data(clients, socket);
+    // if (done) {
+    //   console.log("it is done");
+    // } else {
+    //   console.log("it is not done");
+    // }
+    // } else {
+    //   console.log(socket.id, "has disconn");
+    // }
   });
 
   socket.on("online_status", (id) => {
@@ -111,6 +140,108 @@ app.route("/check_online").get((req, res) => {
     "Number Of Current Active Users: " + Object.keys(clients).length
   );
 });
+
+async function append_data(file_path, mD) {
+  if (fs.existsSync(file_path)) {
+    fs.readFile(file_path, "utf8", (err, data) => {
+      if (err) {
+        console.log(`Error reading file from append: ${err}`);
+        return false;
+      } else {
+        // parse JSON string to JSON object
+        var isExist = isEmptyObject(data);
+        if (!isExist) {
+          const newData = JSON.parse(data);
+
+          // add a new record
+          newData.push(mD);
+
+          // write new data back to the file
+          fs.writeFile(file_path, JSON.stringify(newData, null, 4), (err) => {
+            if (err) {
+              console.log(`Error writing file: ${err}`);
+              return false;
+            } else {
+              return true;
+            }
+          });
+        } else {
+          const newData = JSON.stringify(mD);
+
+          // write file to disk
+          fs.writeFile(file_path, newData, "utf8", (err) => {
+            if (err) {
+              console.log(`Error writing new file: ${err}`);
+              return false;
+            } else {
+              console.log(`File is written successfully!`);
+              return true;
+            }
+          });
+        }
+      }
+    });
+  } else {
+    console.log(`File does not exist`);
+    return false;
+  }
+}
+
+async function keyExists(filePath, id) {
+  try {
+    fs.readFile(filePath, "utf8", (err, data) => {
+      if (err) {
+        console.log(`Error reading file from disk: ${err}`);
+      } else {
+        var isExist = isEmptyObject(data);
+        console.log(isExist);
+        if (!isExist) {
+          const allD = JSON.parse(data);
+
+          // print all databases
+          console.log(allD);
+          Object.keys(allD).forEach((db) => {
+            console.log(db.keys);
+          });
+        }
+      }
+    });
+    return false;
+  } catch (e) {
+    console.log("Error reading File:", e);
+  }
+}
+
+function isEmptyObject(obj) {
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+async function readFiles(filePath) {
+  try {
+    const data = await fs.promises.readFile(filePath, "utf8");
+    return data;
+  } catch (err) {
+    return false;
+  }
+}
+
+async function writeFiles(filename, writedata) {
+  try {
+    await fs.promises.writeFile(
+      filename,
+      JSON.stringify(writedata, null, 4),
+      "utf8"
+    );
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 
 function send_to_db(msg) {
   console.log(msg);
